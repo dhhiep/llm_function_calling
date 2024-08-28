@@ -7,6 +7,12 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+openai = "^1.42.0"
+instructor = "^1.4.0"
+llama-cpp-python = {extras = ["server"], version = "^0.2.89"}
+vnstock3 = "^0.3.0.7"
+bs4 = "^0.0.2"
+transformers = "^4.44.2"
 
 
 [build-system]
