@@ -34,3 +34,18 @@ By implementing LLM Function Calling, we aim to provide a seamless and efficient
     # or
     python -m llama_cpp.server --model model/functionary-7b-v2.q8_0.gguf --chat_format functionary-v2 --hf_pretrained_model_name_or_path ./model
     ```
+5. Start Chat Bot script
+   ```bash
+   ➜ python main.py
+    # You: I need price of stock SHB, VNM and SHS on today
+    # ########## LLM:  Here are the current prices of the stocks you asked for as of today:
+    # - Stock SHB: 10,600 VND
+    # - Stock VNM: 73,900 VND
+    # - Stock SHS: 16,400 VND
+
+    # You: I need price of stock SHB, VNM and SHS on 2024-08-27
+    # ########## LLM:  The prices of the stocks on 2024-08-27 are as follows:
+    # - SHB: 10600.0 VND
+    # - VNM: 73500.0 VND
+    # - SHS: 16400.0 VND
+   ```
