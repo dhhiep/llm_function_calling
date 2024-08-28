@@ -1,7 +1,10 @@
+import asyncio
+import os
 import openai
 import json
 import instructor
 
+import python_weather
 from vnstock3 import Vnstock
 from datetime import date
 
@@ -12,8 +15,27 @@ client = openai.OpenAI(
 client = instructor.patch(client)
 
 
+async def get_weather(city):
+    async with python_weather.Client(unit=python_weather.METRIC) as client:
+        weather = await client.get(city)
+
+        # get the weather forecast for a few days
+        hourlyForecasts = []
+        for daily in weather.daily_forecasts:
+            for hourly in daily.hourly_forecasts:
+                hourlyForecasts.append(
+                    {
+                        "datetime": f"{daily.date} {hourly.time}",
+                        "temperature": f"{hourly.temperature}°C",
+                        "description": hourly.description,
+                    }
+                )
+
+        return json.dumps(hourlyForecasts)
+
+
 # Function to get VN stock price base by date
-def get_vn_stock(stock_code, price_date=""):
+async def get_vn_stock(stock_code, price_date=""):
     stock = Vnstock().stock(symbol=stock_code.upper(), source="VCI")
     if price_date:
         get_date = price_date
@@ -32,6 +54,7 @@ def get_vn_stock(stock_code, price_date=""):
 
 supported_functions = {
     "get_vn_stock": get_vn_stock,
+    "get_weather": get_weather,
 }
 
 
@@ -70,7 +93,25 @@ def chat_with_llm(prompt):
                     "required": ["stock_code"],
                 },
             },
-        }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_weather",
+                "description": "Get weather forecast by city",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "city": {
+                            "type": "string",
+                            "description": "City name",
+                            "example": "Ho Chi Minh, Bangkok, Tokyo, New York",
+                        },
+                    },
+                    "required": ["city"],
+                },
+            },
+        },
     ]
 
     # Call the OpenAI API 1st time
@@ -92,10 +133,7 @@ def chat_with_llm(prompt):
         if function_executor is None:
             continue
 
-        function_response = function_executor(
-            stock_code=function_args.get("stock_code"),
-            price_date=function_args.get("price_date"),
-        )
+        function_response = asyncio.run(function_executor(**function_args))
 
         messages.append(
             {
