@@ -11,4 +11,4 @@ help:
 # Usage:
 # make start_server
 start_server: ## Start the server (Ex: make start_server)
-	python -m llama_cpp.server --model model/functionary-7b-v2.q8_0.gguf --chat_format functionary-v2 --hf_pretrained_model_name_or_path ./model
+	python -m llama_cpp.server --model model/functionary-7b-v2.q4_0.gguf --chat_format functionary-v2 --hf_pretrained_model_name_or_path ./model

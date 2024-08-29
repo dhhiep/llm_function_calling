@@ -42,14 +42,17 @@ async def get_vn_stock(stock_code, price_date=""):
     else:
         get_date = date.today().strftime("%Y-%m-%d")
 
-    df = stock.quote.history(start=get_date, end=get_date, interval="1D")
-    return json.dumps(
-        {
-            "stock": stock_code,
-            "price": str(df["close"].values[0] * 1000) + " VND",
-            "updated": get_date,
-        }
-    )
+    try:
+        df = stock.quote.history(start=get_date, end=get_date, interval="1D")
+        return json.dumps(
+            {
+                "stock": stock_code,
+                "price": str(df["close"].values[0] * 1000) + " VND",
+                "updated": get_date,
+            }
+        )
+    except Exception as e:
+        return json.dumps({"error": "Stock code not found or date is invalid"})
 
 
 supported_functions = {
@@ -125,6 +128,8 @@ def chat_with_llm(prompt):
     # Get the response message
     response_message = response.choices[0].message
     tool_calls = response_message.tool_calls
+    if tool_calls is None:
+        return response_message
 
     for tool_call in tool_calls:
         function_name = tool_call.function.name
@@ -150,10 +155,10 @@ def chat_with_llm(prompt):
         messages=messages,
     )
 
-    return second_response.choices[0].message.content
+    return second_response.choices[0].message
 
 
 while True:
     prompt = input("You: ")
     response = chat_with_llm(prompt)
-    print("#" * 10, "LLM: ", response)
+    print("🍑: ", response.content)
